@@ -19,7 +19,7 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class AnalyzeResponse {
+public class AnalyzeResponseDTO {
     
     @NotBlank(message = "Original message cannot be empty")
     @Size(max = 5000, message = "Original message cannot exceed 5000 characters")
