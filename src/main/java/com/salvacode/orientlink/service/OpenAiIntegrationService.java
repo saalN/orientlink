@@ -203,5 +203,54 @@ public class OpenAiIntegrationService {
         }
     }
 
+     /**
+     * Extract provider information from an Alibaba URL or product description.
+     * 
+     * @param alibabaUrl The Alibaba product/supplier URL
+     * @param additionalContext Any additional context about the provider
+     * @return JSON string with structured provider data
+     */
+    public String extractProviderInfo(String alibabaUrl, String additionalContext) {
+        log.info("Extracting provider info from URL: {}", alibabaUrl);
+        
+        String userPrompt = String.format("""
+                Analyze this Alibaba provider/product URL and extract business information.
+                
+                URL: %s
+                %s
+                
+                Note: You cannot actually browse the URL, but infer what data should be extracted.
+                Provide a template response showing what information should be collected.
+                
+                Respond with this exact JSON structure:
+                {
+                  "providerName": "extracted or 'Unknown'",
+                  "productName": "extracted or 'Unknown'",
+                  "moq": null or number,
+                  "pricePerUnit": null or number,
+                  "currency": "USD/CNY/etc or null",
+                  "certifications": ["cert1", "cert2"],
+                  "deliveryTimeDays": null or number,
+                  "additionalInfo": "any other relevant details",
+                  "riskAssessment": {
+                    "overallRisk": "low/medium/high",
+                    "warnings": ["warning 1", "warning 2"],
+                    "recommendation": "advice for the buyer"
+                  }
+                }
+                
+                Risk assessment should consider:
+                - Price too good to be true
+                - Very low/high MOQ
+                - Lack of certifications
+                - Unusual delivery terms
+                """,
+                alibabaUrl,
+                additionalContext != null ? "Additional context: " + additionalContext : ""
+        );
+        
+        return callOpenAi(userPrompt);
+    }
+
 
 }
