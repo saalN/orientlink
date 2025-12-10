@@ -1,0 +1,78 @@
+# Spring Boot Application Configuration for ProveedorAI
+spring:
+  application:
+    name: orientlink
+  
+  # Database Configuration (PostgreSQL)
+  datasource:
+    url: jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+      connection-timeout: 30000
+  
+  # JPA/Hibernate Configuration
+  jpa:
+    hibernate:
+      ddl-auto: update # Use 'validate' in production, 'update' for development
+    show-sql: ${SHOW_SQL:false}
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        jdbc:
+          batch_size: 20
+        order_inserts: true
+        order_updates: true
+  
+  # Jackson JSON Configuration
+  jackson:
+    serialization:
+      WRITE_DATES_AS_TIMESTAMPS: false
+    time-zone: UTC
+    default-property-inclusion: non_null
+  
+  # Web error handling
+  web:
+    error:
+      include-message: always
+      include-binding-errors: always
+      include-stacktrace: on_param
+
+# OpenAI Configuration (custom properties)
+openai:
+  api-key: ${OPENAI_API_KEY}
+  model: ${OPENAI_MODEL}
+  timeout-seconds: 60
+
+# Server Configuration
+server:
+  port: ${SERVER_PORT:8080}
+  compression:
+    enabled: true
+    mime-types: application/json,application/xml,text/html,text/xml,text/plain
+
+# Logging Configuration
+logging:
+  level:
+    root: INFO
+    '[com.salvacode.proveedorai]': ${LOG_LEVEL:DEBUG}
+    '[org.springframework.web]': INFO
+    '[org.hibernate]': INFO
+    '[org.hibernate.SQL]': ${SQL_LOG_LEVEL:DEBUG}
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+
+# Management/Actuator Endpoints (for health checks and monitoring)
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: when-authorized
