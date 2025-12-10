@@ -60,5 +60,59 @@ public class OpenAiIntegrationService {
       this.objectMapper = new ObjectMapper();
     }
 
+     /**
+     * Analyze a user message: translate, interpret business context, and generate alerts.
+     * 
+     * @param messageText The original message from user or provider
+     * @param sourceLang Source language ("es" or "zh")
+     * @param targetLang Target language ("es" or "zh")
+     * @param conversationContext Optional previous conversation summary
+     * @return JSON string with translation, interpretation, alerts, and suggestions
+     */
+    public String analyzeMessage(String messageText, String sourceLang, String targetLang, 
+                                  String conversationContext) {
+        log.info("Analyzing message from {} to {}", sourceLang, targetLang);
+        
+        String userPrompt = String.format("""
+                Analyze this business message and provide a comprehensive response in JSON format.
+                
+                Message: "%s"
+                Source Language: %s
+                Target Language: %s
+                %s
+                
+                Respond with this exact JSON structure:
+                {
+                  "translatedMessage": "accurate translation here",
+                  "interpretation": {
+                    "businessContext": "explain what this message means in business terms",
+                    "sentiment": "positive/neutral/negative/urgent",
+                    "keyTerms": ["list", "of", "important", "business", "terms"],
+                    "riskLevel": "low/medium/high"
+                  },
+                  "alerts": ["warning 1", "warning 2"],
+                  "suggestedResponses": {
+                    "formal": "formal Chinese response",
+                    "negotiator": "negotiating Chinese response",
+                    "direct": "direct Chinese response"
+                  }
+                }
+                
+                Alerts should include:
+                - Unusual MOQ requirements
+                - Suspicious pricing
+                - Unclear delivery terms
+                - Missing certifications mentions
+                - Pressure tactics or urgency without justification
+                """,
+                messageText,
+                sourceLang,
+                targetLang,
+                conversationContext != null ? "Previous context: " + conversationContext : ""
+        );
+        
+        return callOpenAi(userPrompt);
+    }
+
 
 }
