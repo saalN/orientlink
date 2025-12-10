@@ -4,7 +4,12 @@ package com.salvacode.orientlink.service;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
+import com.theokanning.openai.completion.chat.ChatCompletionRequest;
+import com.theokanning.openai.completion.chat.ChatMessage;
+import com.theokanning.openai.completion.chat.ChatMessageRole;
 import com.theokanning.openai.service.OpenAiService;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.time.Duration;
@@ -112,6 +117,90 @@ public class OpenAiIntegrationService {
         );
         
         return callOpenAi(userPrompt);
+    }
+    
+    /**
+     * Generate Chinese response suggestions based on business context.
+     * 
+     * @param context Business context or provider message
+     * @param userIntent What the user wants to communicate
+     * @param responseType "formal", "negotiator", "direct", or "all"
+     * @return JSON string with suggested responses
+     */
+    public String generateResponses(String context, String userIntent, String responseType) {
+        log.info("Generating {} response(s) for context", responseType);
+        
+        String userPrompt = String.format("""
+                Generate appropriate Chinese response(s) for this business situation.
+                
+                Context: %s
+                User's Intent: %s
+                Response Type: %s
+                
+                Respond with this exact JSON structure:
+                {
+                  "responses": {
+                    "formal": "formal Chinese response (if requested)",
+                    "negotiator": "negotiating Chinese response (if requested)",
+                    "direct": "direct Chinese response (if requested)"
+                  },
+                  "explanation": "brief explanation of the approach taken"
+                }
+                
+                Guidelines:
+                - FORMAL: Use 您, 贵公司, respectful terms, complete sentences
+                - NEGOTIATOR: Balance politeness with assertiveness, 我们可以, 希望
+                - DIRECT: Clear, brief, 我需要, direct questions
+                """,
+                context,
+                userIntent,
+                responseType
+        );
+        
+        return callOpenAi(userPrompt);
+    }
+    
+    /**
+     * Core method to call OpenAI API with master prompt.
+     */
+    private String callOpenAi(String userPrompt) {
+        try {
+            List<ChatMessage> messages = new ArrayList<>();
+            messages.add(new ChatMessage(ChatMessageRole.SYSTEM.value(), MASTER_PROMPT));
+            messages.add(new ChatMessage(ChatMessageRole.USER.value(), userPrompt));
+            
+            ChatCompletionRequest request = ChatCompletionRequest.builder()
+                    .model(model)
+                    .messages(messages)
+                    .temperature(0.7)
+                    .maxTokens(2000)
+                    .build();
+            
+            String response = openAiService.createChatCompletion(request)
+                    .getChoices()
+                    .get(0)
+                    .getMessage()
+                    .getContent();
+            
+            log.info("OpenAI response received successfully");
+            return response;
+            
+        } catch (Exception e) {
+            log.error("Error calling OpenAI API", e);
+            throw new RuntimeException("Failed to get response from OpenAI: " + e.getMessage(), e);
+        }
+    }
+    
+    /**
+     * Utility method to parse JSON response from OpenAI.
+     */
+    public JsonNode parseJsonResponse(String jsonString) {
+        try {
+            return objectMapper.readTree(jsonString);
+        } catch (Exception e) {
+            log.error("Error parsing JSON response from OpenAI", e);
+            throw new RuntimeException("Invalid JSON response from OpenAI", e);
+        }
     }
 
 
