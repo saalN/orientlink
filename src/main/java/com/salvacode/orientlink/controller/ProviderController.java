@@ -31,32 +31,6 @@ public class ProviderController {
     
     /**
      * Analyze Alibaba provider URL and extract business information.
-     * 
-     * Example Request:
-     * GET /api/v1/provider?url=https://www.alibaba.com/product-detail/...&userId=user123
-     * 
-     * Example Response:
-     * {
-     *   "providerId": 10,
-     *   "providerName": "Shenzhen Tech Manufacturing Co.",
-     *   "alibabaUrl": "https://www.alibaba.com/product-detail/...",
-     *   "productName": "Wireless Bluetooth Earbuds",
-     *   "moq": 500,
-     *   "pricePerUnit": 3.50,
-     *   "currency": "USD",
-     *   "certifications": ["CE", "FCC", "RoHS"],
-     *   "deliveryTimeDays": 30,
-     *   "additionalInfo": "Factory with 10+ years experience, OEM/ODM available",
-     *   "riskAssessment": {
-     *     "overallRisk": "low",
-     *     "warnings": [
-     *       "Verify certifications before large order",
-     *       "Request samples for quality check"
-     *     ],
-     *     "recommendation": "Reliable supplier with good track record. Proceed with sample order first."
-     *   },
-     *   "analyzedAt": "2025-12-01T10:30:00"
-     * }
      */
     @GetMapping("/provider")
     public ResponseEntity<ProviderResponseDTO> analyzeProvider(
@@ -72,11 +46,6 @@ public class ProviderController {
     
     /**
      * Get all providers for a specific user.
-     * 
-     * Example Request:
-     * GET /api/v1/providers?userId=user123
-     * 
-     * Returns list of ProviderProfile entities.
      */
     @GetMapping("/providers")
     public ResponseEntity<List<ProviderProfile>> getUserProviders(@RequestParam String userId) {
@@ -89,11 +58,6 @@ public class ProviderController {
     
     /**
      * Get specific provider by ID.
-     * 
-     * Example Request:
-     * GET /api/v1/provider/10
-     * 
-     * Returns ProviderProfile entity.
      */
     @GetMapping("/provider/{id}")
     public ResponseEntity<ProviderProfile> getProviderById(@PathVariable Long id) {
@@ -106,12 +70,7 @@ public class ProviderController {
     
     /**
      * Search providers by name (partial match, case-insensitive).
-     * 
-     * Example Request:
-     * GET /api/v1/providers/search?name=shenzhen
-     * 
-     * Returns list of matching ProviderProfile entities.
-     */
+    */
     @GetMapping("/providers/search")
     public ResponseEntity<List<ProviderProfile>> searchProviders(@RequestParam String name) {
         log.info("Searching providers by name: {}", name);
