@@ -1,0 +1,116 @@
+# ==============================================================================
+# Docker Compose Configuration for OrientLink Application
+# Orchestrates Spring Boot app with PostgreSQL database
+# ==============================================================================
+
+version: '3.8'
+
+services:
+  # PostgreSQL Database Service
+  postgres:
+    image: postgres:16-alpine
+    container_name: orientlink-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - "5432:5432"
+    volumes:
+      # Persist database data
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - orientlink-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # Spring Boot Application Service
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: orientlink-app
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      # ========================================
+      # Spring Framework Configuration
+      # ========================================
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-prod}
+      
+      # ========================================
+      # Database Configuration
+      # Single URL contains host, port, and database name
+      # Uses service name 'postgres' for internal Docker networking
+      # ========================================
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+      SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.postgresql.Driver
+      
+      # ========================================
+      # JPA/Hibernate Configuration
+      # DDL_AUTO: validate (prod) | update (dev) | none
+      # ========================================
+      SPRING_JPA_HIBERNATE_DDL_AUTO: ${SPRING_JPA_HIBERNATE_DDL_AUTO:-validate}
+      SPRING_JPA_SHOW_SQL: ${SPRING_JPA_SHOW_SQL:-false}
+      SPRING_JPA_PROPERTIES_HIBERNATE_FORMAT_SQL: true
+      SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: org.hibernate.dialect.PostgreSQLDialect
+      
+      # ========================================
+      # OpenAI Integration
+      # Required for AI-powered features
+      # ========================================
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      OPENAI_MODEL: ${OPENAI_MODEL:-gpt-4o}
+      OPENAI_TIMEOUT_SECONDS: ${OPENAI_TIMEOUT_SECONDS:-60}
+      
+      # ========================================
+      # Logging Configuration
+      # Custom application properties for log levels
+      # ========================================
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      SQL_LOG_LEVEL: ${SQL_LOG_LEVEL:-WARN}
+      
+      # ========================================
+      # Server Configuration
+      # ========================================
+      SERVER_PORT: 8080
+      
+      # ========================================
+      # JVM Memory & Performance Tuning
+      # Container-aware settings for optimal resource usage
+      # ========================================
+      JAVA_OPTS: >-
+        -XX:+UseContainerSupport
+        -XX:MaxRAMPercentage=75.0
+        -XX:+ExitOnOutOfMemoryError
+        -Djava.security.egd=file:/dev/./urandom
+    ports:
+      - "8080:8080"
+    networks:
+      - orientlink-network
+    healthcheck:
+      # Use wget (installed in Dockerfile) to check Spring Boot Actuator health endpoint
+      # Returns 200 OK when application is healthy and ready to serve traffic
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+networks:
+  orientlink-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+    driver: local
