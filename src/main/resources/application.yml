@@ -1,7 +1,10 @@
-# Spring Boot Application Configuration for ProveedorAI
+# Spring Boot Application Configuration for orientlink
 spring:
   application:
     name: orientlink
+  
+  profiles:
+    active: local
   
   # Database Configuration (PostgreSQL)
   datasource:
@@ -59,7 +62,7 @@ server:
 logging:
   level:
     root: INFO
-    '[com.salvacode.proveedorai]': ${LOG_LEVEL:DEBUG}
+    '[com.salvacode.orientlink]': ${LOG_LEVEL:DEBUG}
     '[org.springframework.web]': INFO
     '[org.hibernate]': INFO
     '[org.hibernate.SQL]': ${SQL_LOG_LEVEL:DEBUG}
