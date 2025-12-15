@@ -1,0 +1,79 @@
+# ==============================================================================
+# .dockerignore - Exclude unnecessary files from Docker build context
+# Reduces build time and image size by preventing unwanted files from being sent
+# ==============================================================================
+
+# Maven build output
+target/
+!target/*.jar
+
+# Maven wrapper jar (we want to copy the wrapper but not its downloaded content)
+.mvn/wrapper/maven-wrapper.jar
+
+# IDE files
+.idea/
+*.iml
+*.iws
+*.ipr
+.vscode/
+.settings/
+.classpath
+.project
+.factorypath
+
+# Version control
+.git/
+.gitignore
+.gitattributes
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+*~
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+*~.nib
+tmp/
+temp/
+
+# Documentation
+README.md
+HELP.md
+docs/
+*.md
+
+# Docker files
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+Jenkinsfile
+
+# Environment files (should not be in image)
+.env
+.env.*
+*.env
+
+# Test files and coverage reports
+*.test
+coverage/
+.nyc_output/
+
+# Node modules (if frontend is included)
+node_modules/
+npm-debug.log
