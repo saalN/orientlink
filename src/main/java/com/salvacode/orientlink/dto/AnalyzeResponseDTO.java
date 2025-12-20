@@ -77,14 +77,22 @@ public class AnalyzeResponseDTO {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class SuggestedResponses {
-        
-        @Size(max = 3000, message = "Formal response cannot exceed 3000 characters")
-        private String formal; // Formal Chinese response
-        
-        @Size(max = 3000, message = "Negotiator response cannot exceed 3000 characters")
-        private String negotiator; // Negotiating tone response
-        
-        @Size(max = 3000, message = "Direct response cannot exceed 3000 characters")
-        private String direct; // Direct/assertive response
+        @Valid
+        private BilingualResponse formal;
+        @Valid
+        private BilingualResponse negotiator;
+        @Valid
+        private BilingualResponse direct;
+    }
+
+    @Getter
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class BilingualResponse {
+        @Size(max = 3000, message = "Chinese response cannot exceed 3000 characters")
+        private String zh;
+        @Size(max = 3000, message = "Translated response cannot exceed 3000 characters")
+        private String es;
     }
 }

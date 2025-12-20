@@ -80,12 +80,12 @@ public class OpenAiIntegrationService {
         
         String userPrompt = String.format("""
                 Analyze this business message and provide a comprehensive response in JSON format.
-                
+
                 Message: "%s"
                 Source Language: %s
                 Target Language: %s
                 %s
-                
+
                 Respond with this exact JSON structure:
                 {
                   "translatedMessage": "accurate translation here",
@@ -97,12 +97,14 @@ public class OpenAiIntegrationService {
                   },
                   "alerts": ["warning 1", "warning 2"],
                   "suggestedResponses": {
-                    "formal": "formal Chinese response",
-                    "negotiator": "negotiating Chinese response",
-                    "direct": "direct Chinese response"
+                    "formal": { "zh": "formal Chinese response", "es": "formal Spanish response" },
+                    "negotiator": { "zh": "negotiating Chinese response", "es": "negotiating Spanish response" },
+                    "direct": { "zh": "direct Chinese response", "es": "direct Spanish response" }
                   }
                 }
-                
+
+                For each suggested response (formal, negotiator, direct), provide both the original (zh) and translated (es) versions.
+
                 Alerts should include:
                 - Unusual MOQ requirements
                 - Suspicious pricing
@@ -131,22 +133,24 @@ public class OpenAiIntegrationService {
         log.info("Generating {} response(s) for context", responseType);
         
         String userPrompt = String.format("""
-                Generate appropriate Chinese response(s) for this business situation.
-                
+                Generate appropriate business responses for this situation in both Chinese (zh) and Spanish (es).
+
                 Context: %s
                 User's Intent: %s
                 Response Type: %s
-                
+
                 Respond with this exact JSON structure:
                 {
                   "responses": {
-                    "formal": "formal Chinese response (if requested)",
-                    "negotiator": "negotiating Chinese response (if requested)",
-                    "direct": "direct Chinese response (if requested)"
+                    "formal": { "zh": "formal Chinese response (if requested)", "es": "formal Spanish response (if requested)" },
+                    "negotiator": { "zh": "negotiating Chinese response (if requested)", "es": "negotiating Spanish response (if requested)" },
+                    "direct": { "zh": "direct Chinese response (if requested)", "es": "direct Spanish response (if requested)" }
                   },
                   "explanation": "brief explanation of the approach taken"
                 }
-                
+
+                For each response type (formal, negotiator, direct), provide both the original (zh) and translated (es) versions.
+
                 Guidelines:
                 - FORMAL: Use 您, 贵公司, respectful terms, complete sentences
                 - NEGOTIATOR: Balance politeness with assertiveness, 我们可以, 希望

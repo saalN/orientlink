@@ -39,21 +39,31 @@ public class ResponseGenerationService {
         // Parse JSON response
         JsonNode jsonResponse = openAiService.parseJsonResponse(aiResponse);
         JsonNode responses = jsonResponse.get("responses");
-        
-        // Build response DTO
-        AnalyzeResponseDTO.SuggestedResponses.SuggestedResponsesBuilder builder = 
-                AnalyzeResponseDTO.SuggestedResponses.builder();
-        
+
+        AnalyzeResponseDTO.SuggestedResponses.SuggestedResponsesBuilder builder = AnalyzeResponseDTO.SuggestedResponses.builder();
+
         if (responses.has("formal") && !responses.get("formal").isNull()) {
-            builder.formal(responses.get("formal").asText());
+            JsonNode formal = responses.get("formal");
+            builder.formal(AnalyzeResponseDTO.BilingualResponse.builder()
+                .zh(formal.get("zh").asText())
+                .es(formal.get("es").asText())
+                .build());
         }
         if (responses.has("negotiator") && !responses.get("negotiator").isNull()) {
-            builder.negotiator(responses.get("negotiator").asText());
+            JsonNode negotiator = responses.get("negotiator");
+            builder.negotiator(AnalyzeResponseDTO.BilingualResponse.builder()
+                .zh(negotiator.get("zh").asText())
+                .es(negotiator.get("es").asText())
+                .build());
         }
         if (responses.has("direct") && !responses.get("direct").isNull()) {
-            builder.direct(responses.get("direct").asText());
+            JsonNode direct = responses.get("direct");
+            builder.direct(AnalyzeResponseDTO.BilingualResponse.builder()
+                .zh(direct.get("zh").asText())
+                .es(direct.get("es").asText())
+                .build());
         }
-        
+
         log.info("Response generation completed successfully");
         return builder.build();
     }

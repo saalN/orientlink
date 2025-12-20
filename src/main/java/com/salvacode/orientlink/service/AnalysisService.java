@@ -89,13 +89,22 @@ public class AnalysisService {
         // Extract alerts
         List<String> alerts = extractListFromJson(json.get("alerts"));
         
-        // Extract suggested responses
+        // Extract suggested responses (bilingual)
         JsonNode responses = json.get("suggestedResponses");
         AnalyzeResponseDTO.SuggestedResponses suggestedResponses = AnalyzeResponseDTO.SuggestedResponses.builder()
-                .formal(responses.get("formal").asText())
-                .negotiator(responses.get("negotiator").asText())
-                .direct(responses.get("direct").asText())
-                .build();
+            .formal(AnalyzeResponseDTO.BilingualResponse.builder()
+                .zh(responses.get("formal").get("zh").asText())
+                .es(responses.get("formal").get("es").asText())
+                .build())
+            .negotiator(AnalyzeResponseDTO.BilingualResponse.builder()
+                .zh(responses.get("negotiator").get("zh").asText())
+                .es(responses.get("negotiator").get("es").asText())
+                .build())
+            .direct(AnalyzeResponseDTO.BilingualResponse.builder()
+                .zh(responses.get("direct").get("zh").asText())
+                .es(responses.get("direct").get("es").asText())
+                .build())
+            .build();
         
         return AnalyzeResponseDTO.builder()
                 .originalMessage(originalMessage)
