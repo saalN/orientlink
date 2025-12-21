@@ -1,8 +1,10 @@
 package com.salvacode.orientlink.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.salvacode.orientlink.dto.AnalyzeRequestDTO;
 import com.salvacode.orientlink.dto.AnalyzeResponseDTO;
+import com.salvacode.orientlink.dto.ConversationHistoryDTO;
 import com.salvacode.orientlink.entity.ConversationHistory;
 import com.salvacode.orientlink.entity.ProviderProfile;
 import com.salvacode.orientlink.repository.ConversationHistoryRepository;
@@ -15,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Service for analyzing user messages about provider conversations.
@@ -123,6 +126,16 @@ public class AnalysisService {
      */
     private ConversationHistory saveConversation(AnalyzeRequestDTO request, ProviderProfile provider,
                                                   AnalyzeResponseDTO response, String rawAiResponse) {
+        // Serializar solo el JSON de suggestedResponses
+        String suggestedResponsesJson = null;
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            suggestedResponsesJson = mapper.writeValueAsString(response.getSuggestedResponses());
+        } catch (Exception e) {
+            log.error("Error serializing suggestedResponses to JSON", e);
+            suggestedResponsesJson = response.getSuggestedResponses().toString();
+        }
+
         ConversationHistory conversation = ConversationHistory.builder()
                 .userId(request.getUserId())
                 .provider(provider)
@@ -132,7 +145,8 @@ public class AnalysisService {
                 .targetLanguage(response.getTargetLanguage())
                 .aiInterpretation(response.getInterpretation().getBusinessContext())
                 .alerts(String.join("; ", response.getAlerts()))
-                .suggestedResponses(rawAiResponse) // Store full JSON for reference
+                .suggestedResponses(suggestedResponsesJson) // Solo el JSON de suggestedResponses
+                //TODO Store full JSON for reference
                 .messageType("analysis")
                 .build();
         
@@ -153,10 +167,28 @@ public class AnalysisService {
     /**
      * Get conversation history for a user.
      */
-    public List<ConversationHistory> getConversationHistory(String userId, Long providerId) {
+    public List<ConversationHistoryDTO> getConversationHistory(String userId, Long providerId) {
+        
+        List<ConversationHistory> entities;
+
         if (providerId != null) {
-            return conversationRepository.findByUserIdAndProviderIdOrderByTimestampDesc(userId, providerId);
+            entities = conversationRepository.findByUserIdAndProviderIdOrderByTimestampDesc(userId, providerId);
+        } else {
+            entities = conversationRepository.findByUserIdOrderByTimestampDesc(userId);
         }
-        return conversationRepository.findByUserIdOrderByTimestampDesc(userId);
+        
+        return entities.stream()
+                .map(entity -> new ConversationHistoryDTO(entity.getUserId(),
+                        entity.getProvider() != null ? entity.getProvider().getId() : null,
+                        entity.getOriginalMessage(),
+                        entity.getTranslatedMessage(),
+                        entity.getSourceLanguage(),
+                        entity.getTargetLanguage(),
+                        entity.getAiInterpretation(),
+                        entity.getAlerts(),
+                        entity.getSuggestedResponses(),
+                        entity.getMessageType()))
+                .collect(Collectors.toList());
+       
     }
 }

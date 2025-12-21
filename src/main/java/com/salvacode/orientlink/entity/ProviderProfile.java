@@ -10,8 +10,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
+
 
 /**
  * Entity to store provider profiles extracted from Alibaba or manually created.
@@ -70,9 +69,6 @@ public class ProviderProfile {
     @Column
     private LocalDateTime updatedAt;
     
-    @OneToMany(mappedBy = "provider", cascade = CascadeType.ALL, orphanRemoval = true)
-    @Builder.Default
-    private List<ConversationHistory> conversations = new ArrayList<>();
     
     @PrePersist
     protected void onCreate() {

@@ -2,6 +2,7 @@ package com.salvacode.orientlink.controller;
 
 import com.salvacode.orientlink.dto.AnalyzeRequestDTO;
 import com.salvacode.orientlink.dto.AnalyzeResponseDTO;
+import com.salvacode.orientlink.dto.ConversationHistoryDTO;
 import com.salvacode.orientlink.dto.RespondRequestDTO;
 import com.salvacode.orientlink.entity.ConversationHistory;
 import com.salvacode.orientlink.service.AnalysisService;
@@ -61,12 +62,12 @@ public class AnalysisController {
      * Get conversation history for a user.
      */
     @GetMapping("/conversations")
-    public ResponseEntity<List<ConversationHistory>> getConversationHistory(
+    public ResponseEntity<List<ConversationHistoryDTO>> getConversationHistory(
             @RequestParam String userId,
             @RequestParam(required = false) Long providerId) {
         log.info("Retrieving conversation history for user: {}", userId);
         
-        List<ConversationHistory> history = analysisService.getConversationHistory(userId, providerId);
+        List<ConversationHistoryDTO> history = analysisService.getConversationHistory(userId, providerId);
         
         return ResponseEntity.ok(history);
     }
